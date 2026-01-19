@@ -195,7 +195,8 @@ if run_analysis:
                             yaxis_title="Price ($)",
                             template="plotly_dark",
                             hovermode='x unified',
-                            height=500
+                            height=500,
+                            margin=dict(l=10, r=10, t=50, b=10)
                         )
                         
                         st.plotly_chart(fig)
