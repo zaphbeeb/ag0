@@ -147,7 +147,7 @@ if run_analysis:
 
                         # Calculate signals for visualization
                         short_col = f'EMA_{short_p}'
-                        long_col = f'EMA_{long_col}'
+                        long_col = f'EMA_{long_p}'
                         
                         # Create signal series with wait logic
                         raw_crossover = (df_emas[short_col] > df_emas[long_col]).astype(int)
