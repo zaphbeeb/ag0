@@ -67,13 +67,17 @@
     <script>
         (function () {
             const ctx = document.getElementById('chart-{{ loop.index }}').getContext('2d');
+            // Parse data from Jinja
             const data = {{ res.chart_data | tojson | safe
         }};
+        const shortPeriod = {{ res.best_pair.short }};
+        const longPeriod = {{ res.best_pair.long }};
 
         const labels = data.map(d => d.Date);
         const prices = data.map(d => d.Close);
-        const emaShort = data.map(d => d['EMA_' + {{ res.best_pair.short }}]);
-        const emaLong = data.map(d => d['EMA_' + {{ res.best_pair.long }}]);
+        // Use bracket notation with constructed string key
+        const emaShort = data.map(d => d[`EMA_${shortPeriod}`]);
+        const emaLong = data.map(d => d[`EMA_${longPeriod}`]);
 
         new Chart(ctx, {
             type: 'line',
@@ -89,7 +93,7 @@
                         tension: 0.1
                     },
                     {
-                        label: 'EMA {{ res.best_pair.short }}',
+                        label: `EMA ${shortPeriod}`,
                         data: emaShort,
                         borderColor: '#3b82f6', // Blue-500
                         borderWidth: 2,
@@ -97,7 +101,7 @@
                         tension: 0.1
                     },
                     {
-                        label: 'EMA {{ res.best_pair.long }}',
+                        label: `EMA ${longPeriod}`,
                         data: emaLong,
                         borderColor: '#a855f7', // Purple-500
                         borderWidth: 2,
