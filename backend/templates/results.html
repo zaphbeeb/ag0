@@ -70,82 +70,113 @@
     <!-- Chart Script -->
     <script>
         (function () {
-            var chartIndex = '{{ loop.index }}';
-            var ctx = document.getElementById('chart-' + chartIndex).getContext('2d');
-            var config = JSON.parse(document.getElementById('data-' + chartIndex).textContent);
-            var data = config.chartData;
-            var shortPeriod = config.shortPeriod;
-            var longPeriod = config.longPeriod;
+            try {
+                var chartIndex = '{{ loop.index }}';
+                console.log('Initializing chart:', chartIndex);
 
-            var labels = data.map(function (d) { return d.Date; });
-            var prices = data.map(function (d) { return d.Close; });
-            var emaShort = data.map(function (d) { return d['EMA_' + shortPeriod]; });
-            var emaLong = data.map(function (d) { return d['EMA_' + longPeriod]; });
+                // Check if Chart is available
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js is not loaded!');
+                    return;
+                }
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Price',
-                            data: prices,
-                            borderColor: '#9ca3af',
-                            borderWidth: 1,
-                            pointRadius: 0,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'EMA ' + shortPeriod,
-                            data: emaShort,
-                            borderColor: '#3b82f6',
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'EMA ' + longPeriod,
-                            data: emaLong,
-                            borderColor: '#a855f7',
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            tension: 0.1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: {
-                            labels: { color: '#e5e7eb' }
-                        },
-                        tooltip: {
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            backgroundColor: 'rgba(17, 24, 39, 0.9)'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'month'
+                var ctx = document.getElementById('chart-' + chartIndex);
+                if (!ctx) {
+                    console.error('Canvas element not found:', 'chart-' + chartIndex);
+                    return;
+                }
+                ctx = ctx.getContext('2d');
+
+                var dataElement = document.getElementById('data-' + chartIndex);
+                if (!dataElement) {
+                    console.error('Data element not found:', 'data-' + chartIndex);
+                    return;
+                }
+
+                var config = JSON.parse(dataElement.textContent);
+                console.log('Parsed config:', config);
+
+                var data = config.chartData;
+                var shortPeriod = config.shortPeriod;
+                var longPeriod = config.longPeriod;
+
+                var labels = data.map(function (d) { return d.Date; });
+                var prices = data.map(function (d) { return d.Close; });
+                var emaShort = data.map(function (d) { return d['EMA_' + shortPeriod]; });
+                var emaLong = data.map(function (d) { return d['EMA_' + longPeriod]; });
+
+                console.log('Creating chart with', labels.length, 'data points');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Price',
+                                data: prices,
+                                borderColor: '#9ca3af',
+                                borderWidth: 1,
+                                pointRadius: 0,
+                                tension: 0.1
                             },
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9ca3af' }
+                            {
+                                label: 'EMA ' + shortPeriod,
+                                data: emaShort,
+                                borderColor: '#3b82f6',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'EMA ' + longPeriod,
+                                data: emaLong,
+                                borderColor: '#a855f7',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
                         },
-                        y: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9ca3af' }
+                        plugins: {
+                            legend: {
+                                labels: { color: '#e5e7eb' }
+                            },
+                            tooltip: {
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                backgroundColor: 'rgba(17, 24, 39, 0.9)'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'month'
+                                },
+                                grid: { color: '#374151' },
+                                ticks: { color: '#9ca3af' }
+                            },
+                            y: {
+                                grid: { color: '#374151' },
+                                ticks: { color: '#9ca3af' }
+                            }
                         }
                     }
-                }
-            });
+                });
+
+                console.log('Chart created successfully for index:', chartIndex);
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                console.error('Error stack:', error.stack);
+            }
         })();
     </script>
     {% endfor %}
