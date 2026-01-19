@@ -25,10 +25,11 @@ def calculate_emas(df: pd.DataFrame, periods: list[int]) -> pd.DataFrame:
              
     return df
 
-def find_crossovers(df: pd.DataFrame, short_period: int, long_period: int):
+def find_crossovers(df: pd.DataFrame, short_period: int, long_period: int, wait_days: int = 0):
     """
     Identifies crossover signals between a short and long EMA.
     Returns a DataFrame with 'Signal' column: 1 (Buy), -1 (Sell), 0 (Hold).
+    If wait_days > 0, requires the crossover condition to persist for wait_days.
     """
     short_col = f'EMA_{short_period}'
     long_col = f'EMA_{long_period}'
@@ -40,14 +41,20 @@ def find_crossovers(df: pd.DataFrame, short_period: int, long_period: int):
     signals['Signal'] = 0.0
     
     # Create a boolean series where short > long
-    signals['Long_Signal'] = df[short_col] > df[long_col]
+    # 1 where Short > Long, 0 where Short <= Long
+    raw_condition = (df[short_col] > df[long_col]).astype(int)
     
-    # Take the difference to find where the crossover happened
-    # diff will be True (1) when False -> True (Buy), and False (-1) when True -> False (Sell)
-    # dependent on casting bool to int: True=1, False=0. 
-    # int(True) - int(False) = 1 (Buy)
-    # int(False) - int(True) = -1 (Sell)
-    signals['Signal'] = signals['Long_Signal'].astype(int).diff()
+    if wait_days > 0:
+        # Require the condition to hold for (wait_days + 1) consecutive days
+        # E.g., wait=1: Day T (Cross), Day T+1 (Still Crossed) -> Signal at T+1
+        # rolling window size = wait_days + 1
+        confirmed_condition = raw_condition.rolling(window=wait_days + 1).min()
+    else:
+        confirmed_condition = raw_condition
+    
+    # Take the difference to find where the status changed
+    # NaN values from rolling will result in NaN diffs, fill with 0
+    signals['Signal'] = confirmed_condition.diff().fillna(0)
     
     return signals
 
@@ -92,7 +99,7 @@ def backtest_strategy(df: pd.DataFrame, signals: pd.DataFrame):
         
     return total_gain_pct, trades
 
-def optimize_pairs(df: pd.DataFrame, periods: list[int]):
+def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0):
     """
     Finds the pair of MA periods that maximizes gain.
     """
@@ -105,7 +112,7 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int]):
     
     import itertools
     for short_p, long_p in itertools.combinations(sorted(periods), 2):
-        signals = find_crossovers(df_emas, short_p, long_p)
+        signals = find_crossovers(df_emas, short_p, long_p, wait_days=wait_days)
         gain, _ = backtest_strategy(df_emas, signals)
         
         results.append({
