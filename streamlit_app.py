@@ -81,6 +81,9 @@ with st.expander("Configuration", expanded=True):
     with col3:
         wait_days = st.number_input("Crossing Wait (days)", min_value=0, value=0, help="Wait N days to confirm crossover signal")
     
+    # MA Type
+    ma_type = st.radio("Moving Average Type", ["EMA", "SMA"], horizontal=True)
+
     # Run button
     run_analysis = st.button("🚀 Run Analysis", type="primary")
 
@@ -115,12 +118,12 @@ if run_analysis:
                         st.header(f"📊 {ticker}")
                         
                         # Optimize pairs
-                        best_pair, best_gain, best_trades_count, buy_hold_return, opt_results, df_emas = optimize_pairs(df, periods, wait_days=wait_days)
+                        best_pair, best_gain, best_trades_count, buy_hold_return, opt_results, df_mas = optimize_pairs(df, periods, wait_days=wait_days, ma_type=ma_type)
                         
                         # Display metrics
                         col1, col2, col3, col4 = st.columns(4)
                         with col1:
-                            st.metric("Best MA Pair", f"{best_pair[0]} / {best_pair[1]}")
+                            st.metric(f"Best {ma_type} Pair", f"{best_pair[0]} / {best_pair[1]}")
                         with col2:
                             st.metric("Max Potential Gain", f"{best_gain:.2f}%", 
                                      delta=f"{best_gain:.2f}%")
@@ -135,34 +138,34 @@ if run_analysis:
                         
                         # Add price line
                         fig.add_trace(go.Scatter(
-                            x=df_emas.index,
-                            y=df_emas['Close'],
+                            x=df_mas.index,
+                            y=df_mas['Close'],
                             name='Price',
                             line=dict(color='#9ca3af', width=1)
                         ))
                         
-                        # Add EMA lines for best pair
+                        # Add MA lines for best pair
                         short_p, long_p = best_pair
                         fig.add_trace(go.Scatter(
-                            x=df_emas.index,
-                            y=df_emas[f'EMA_{short_p}'],
-                            name=f'EMA {short_p}',
+                            x=df_mas.index,
+                            y=df_mas[f'{ma_type}_{short_p}'],
+                            name=f'{ma_type} {short_p}',
                             line=dict(color='#3b82f6', width=2)
                         ))
                         
                         fig.add_trace(go.Scatter(
-                            x=df_emas.index,
-                            y=df_emas[f'EMA_{long_p}'],
-                            name=f'EMA {long_p}',
+                            x=df_mas.index,
+                            y=df_mas[f'{ma_type}_{long_p}'],
+                            name=f'{ma_type} {long_p}',
                             line=dict(color='#a855f7', width=2)
                         ))
 
                         # Calculate signals for visualization
-                        short_col = f'EMA_{short_p}'
-                        long_col = f'EMA_{long_p}'
+                        short_col = f'{ma_type}_{short_p}'
+                        long_col = f'{ma_type}_{long_p}'
                         
                         # Create signal series with wait logic
-                        raw_crossover = (df_emas[short_col] > df_emas[long_col]).astype(int)
+                        raw_crossover = (df_mas[short_col] > df_mas[long_col]).astype(int)
                         
                         if wait_days > 0:
                             confirmed_crossover = raw_crossover.rolling(window=wait_days + 1).min()
