@@ -223,21 +223,18 @@ if run_analysis:
                 st.error(f"An error occurred: {str(e)}")
                 st.exception(e)
 else:
-    # Welcome message
-    st.info("👈 Configure your analysis parameters in the sidebar and click 'Run Analysis' to begin.")
-    
     # Instructions
     with st.expander("ℹ️ How to use"):
         st.markdown("""
         1. **Enter Stock Tickers**: Add one or more ticker symbols (e.g., AAPL, MSFT, GOOGL)
         2. **Select MA Periods**: Choose which moving average periods to analyze
         3. **Set Date Range**: Define the backtesting period
-        4. **Run Analysis**: Click the button to calculate optimal EMA pairs
+        4. **Run Analysis**: Click the button to calculate optimal MA pairs
         
         The app will:
-        - Calculate EMAs for all selected periods
+        - Calculate MAs for all selected periods
         - Identify crossover signals (buy/sell)
         - Backtest each pair combination
         - Show the pair with maximum potential gain
-        - Display interactive charts with the best EMA pair
+        - Display interactive charts with the best MA pair
         """)
