@@ -198,7 +198,7 @@ if run_analysis:
                         
                         # Update layout
                         fig.update_layout(
-                            title=f"{ticker} - Price with Best EMA Pair",
+                            title=f"{ticker} - Price with Best {ma_type} Pair",
                             xaxis_title="Date",
                             yaxis_title="Price ($)",
                             template="plotly_dark",
@@ -214,7 +214,7 @@ if run_analysis:
                             results_df = pd.DataFrame(opt_results)
                             results_df = results_df.sort_values('gain', ascending=False)
                             results_df['gain'] = results_df['gain'].apply(lambda x: f"{x:.2f}%")
-                            results_df = results_df.rename(columns={"pair": "EMA Pair", "gain": "Gain", "trades": "Transactions"})
+                            results_df = results_df.rename(columns={"pair": f"{ma_type} Pair", "gain": "Gain", "trades": "Transactions"})
                             st.dataframe(results_df, hide_index=True)
                         
                         st.divider()
