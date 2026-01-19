@@ -198,7 +198,8 @@ if run_analysis:
                             results_df = pd.DataFrame(opt_results)
                             results_df = results_df.sort_values('gain', ascending=False)
                             results_df['gain'] = results_df['gain'].apply(lambda x: f"{x:.2f}%")
-                            st.dataframe(results_df, use_container_width=True)
+                            results_df = results_df.rename(columns={"pair": "EMA Pair", "gain": "Gain", "trades": "Transactions"})
+                            st.dataframe(results_df, use_container_width=True, hide_index=True)
                         
                         st.divider()
                         
