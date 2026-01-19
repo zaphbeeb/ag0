@@ -72,6 +72,7 @@ with st.sidebar:
     )
     
     # Run button
+    wait_days = st.number_input("Crossing Wait (days)", min_value=0, value=0, help="Wait N days to confirm crossover signal")
     run_analysis = st.button("🚀 Run Analysis", type="primary")
 
 # Main content
@@ -105,7 +106,7 @@ if run_analysis:
                         st.header(f"📊 {ticker}")
                         
                         # Optimize pairs
-                        best_pair, best_gain, opt_results, df_emas = optimize_pairs(df, periods)
+                        best_pair, best_gain, opt_results, df_emas = optimize_pairs(df, periods, wait_days=wait_days)
                         
                         # Display metrics
                         col1, col2, col3 = st.columns(3)
@@ -146,13 +147,18 @@ if run_analysis:
 
                         # Calculate signals for visualization
                         short_col = f'EMA_{short_p}'
-                        long_col = f'EMA_{long_p}'
+                        long_col = f'EMA_{long_col}'
                         
-                        # Create signal series
-                        crossover = (df_emas[short_col] > df_emas[long_col]).astype(int)
-                        # 1 = Short > Long, 0 = Short < Long
+                        # Create signal series with wait logic
+                        raw_crossover = (df_emas[short_col] > df_emas[long_col]).astype(int)
+                        
+                        if wait_days > 0:
+                            confirmed_crossover = raw_crossover.rolling(window=wait_days + 1).min()
+                        else:
+                            confirmed_crossover = raw_crossover
+                            
                         # Diff: 1 = Buy (0->1), -1 = Sell (1->0)
-                        signals = crossover.diff()
+                        signals = confirmed_crossover.diff().fillna(0)
                         
                         buy_signals = df_emas[signals == 1]
                         sell_signals = df_emas[signals == -1]
