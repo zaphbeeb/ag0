@@ -68,11 +68,13 @@ with st.sidebar:
     st.subheader("Date Range")
     start_date = st.date_input(
         "Start Date",
-        value=datetime(2022, 1, 1)
+    start_date = st.date_input(
+        "Start Date",
+        value=datetime(2024, 1, 1)
     )
     end_date = st.date_input(
         "End Date",
-        value=datetime(2025, 1, 1)
+        value=datetime(2026, 1, 1)
     )
     
     # Run button
@@ -110,16 +112,19 @@ if run_analysis:
                         st.header(f"📊 {ticker}")
                         
                         # Optimize pairs
-                        best_pair, best_gain, best_trades_count, opt_results, df_emas = optimize_pairs(df, periods, wait_days=wait_days)
+                        best_pair, best_gain, best_trades_count, buy_hold_return, opt_results, df_emas = optimize_pairs(df, periods, wait_days=wait_days)
                         
                         # Display metrics
-                        col1, col2, col3 = st.columns(3)
+                        col1, col2, col3, col4 = st.columns(4)
                         with col1:
                             st.metric("Best MA Pair", f"{best_pair[0]} / {best_pair[1]}")
                         with col2:
                             st.metric("Max Potential Gain", f"{best_gain:.2f}%", 
                                      delta=f"{best_gain:.2f}%")
                         with col3:
+                            st.metric("Buy & Hold", f"{buy_hold_return:.2f}%",
+                                     delta=f"{buy_hold_return:.2f}%")
+                        with col4:
                             st.metric("Transactions", best_trades_count)
                         
                         # Create chart
