@@ -110,16 +110,19 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0, ma_
         signals = find_crossovers(df_mas, short_p, long_p, wait_days=wait_days, ma_type=ma_type)
         gain, trades = backtest_strategy(df_mas, signals)
         
+        # Count actual executed trades (buy/sell), excluding virtual 'hold' exit
+        trade_count = len([t for t in trades if t['type'] in ('buy', 'sell')])
+        
         results.append({
             'pair': f"{short_p}/{long_p}",
             'gain': gain,
-            'trades': len(trades)
+            'trades': trade_count
         })
         
         if gain > best_gain:
             best_gain = gain
             best_pair = (short_p, long_p)
-            best_trades_count = len(trades)
+            best_trades_count = trade_count
 
     # Calculate Buy & Hold Return
     start_price = df['Close'].iloc[0]
