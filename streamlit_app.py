@@ -106,7 +106,7 @@ if run_analysis:
                         st.header(f"📊 {ticker}")
                         
                         # Optimize pairs
-                        best_pair, best_gain, opt_results, df_emas = optimize_pairs(df, periods, wait_days=wait_days)
+                        best_pair, best_gain, best_trades_count, opt_results, df_emas = optimize_pairs(df, periods, wait_days=wait_days)
                         
                         # Display metrics
                         col1, col2, col3 = st.columns(3)
@@ -116,7 +116,7 @@ if run_analysis:
                             st.metric("Max Potential Gain", f"{best_gain:.2f}%", 
                                      delta=f"{best_gain:.2f}%")
                         with col3:
-                            st.metric("Data Points", len(df_emas))
+                            st.metric("Transactions", best_trades_count)
                         
                         # Create chart
                         fig = go.Figure()
