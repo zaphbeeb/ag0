@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-700">
+        <h1 class="text-3xl font-bold mb-6 text-center text-white">Backtest Strategy</h1>
+        <p class="text-gray-400 mb-8 text-center">
+            Identify momentum signals and optimize moving average pairs.
+        </p>
+
+        <form action="/analyze-ui" method="post" class="space-y-6">
+            <!-- Tickers Input -->
+            <div>
+                <label for="tickers" class="block text-sm font-medium text-gray-300 mb-2">
+                    Stock Tickers (comma separated)
+                </label>
+                <input type="text" name="tickers" id="tickers" placeholder="AAPL, MSFT, GOOGL" required
+                    class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+            </div>
+
+            <!-- MA Periods Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    Moving Average Periods (select multiple)
+                </label>
+                <div class="grid grid-cols-4 gap-3">
+                    {% for p in [5, 10, 20, 25, 50, 100, 150, 200] %}
+                    <label
+                        class="flex items-center space-x-2 bg-gray-900 p-2 rounded border border-gray-700 hover:border-blue-500 cursor-pointer transition">
+                        <input type="checkbox" name="periods" value="{{ p }}" {% if p in [20, 50] %}checked{% endif %}
+                            class="rounded text-blue-500 bg-gray-800 border-gray-600 focus:ring-blue-500">
+                        <span class="text-gray-200">{{ p }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Date Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-300 mb-2">Start Date</label>
+                    <input type="date" name="start_date" id="start_date" required value="2023-01-01"
+                        class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="end_date" class="block text-sm font-medium text-gray-300 mb-2">End Date</label>
+                    <input type="date" name="end_date" id="end_date" required value="2024-01-01"
+                        class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-md shadow-lg transform transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ring-offset-gray-800 mt-4">
+                Run Analysis
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
