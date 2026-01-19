@@ -121,12 +121,17 @@ if run_analysis:
                         best_pair, best_gain, best_trades_count, buy_hold_return, opt_results, df_mas = optimize_pairs(df, periods, wait_days=wait_days, ma_type=ma_type)
                         
                         # Display metrics
-                        col1, col2, col3, col4 = st.columns(4)
+                        # Display metrics
+                        symbol = ">" if best_gain > buy_hold_return else "<"
+                        col1, col2, col_mid, col3, col4 = st.columns([2.5, 2.5, 0.5, 2.5, 2])
+                        
                         with col1:
                             st.metric(f"Best {ma_type} Pair", f"{best_pair[0]} / {best_pair[1]}")
                         with col2:
                             st.metric("Max Potential Gain", f"{best_gain:.2f}%", 
                                      delta=f"{best_gain:.2f}%")
+                        with col_mid:
+                            st.markdown(f"<div style='display: flex; justify-content: center; align-items: center; height: 100%; padding-top: 25px; font-size: 24px; font-weight: bold;'>{symbol}</div>", unsafe_allow_html=True)
                         with col3:
                             st.metric("Buy & Hold", f"{buy_hold_return:.2f}%",
                                      delta=f"{buy_hold_return:.2f}%")
