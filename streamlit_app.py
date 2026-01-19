@@ -68,8 +68,6 @@ with st.sidebar:
     st.subheader("Date Range")
     start_date = st.date_input(
         "Start Date",
-    start_date = st.date_input(
-        "Start Date",
         value=datetime(2024, 1, 1)
     )
     end_date = st.date_input(
