@@ -20,6 +20,10 @@ st.markdown("""
     .main {
         background-color: #0e1117;
     }
+    /* Scale down the entire UI by 20% */
+    .stApp {
+        zoom: 0.80;
+    }
     .stButton>button {
         width: 100%;
         background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
