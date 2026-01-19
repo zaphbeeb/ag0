@@ -198,7 +198,7 @@ if run_analysis:
                             height=500
                         )
                         
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig)
                         
                         # Show optimization results
                         with st.expander("📋 View All Combinations"):
@@ -206,7 +206,7 @@ if run_analysis:
                             results_df = results_df.sort_values('gain', ascending=False)
                             results_df['gain'] = results_df['gain'].apply(lambda x: f"{x:.2f}%")
                             results_df = results_df.rename(columns={"pair": "EMA Pair", "gain": "Gain", "trades": "Transactions"})
-                            st.dataframe(results_df, use_container_width=True, hide_index=True)
+                            st.dataframe(results_df, hide_index=True)
                         
                         st.divider()
                         
