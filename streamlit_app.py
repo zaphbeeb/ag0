@@ -143,6 +143,37 @@ if run_analysis:
                             name=f'EMA {long_p}',
                             line=dict(color='#a855f7', width=2)
                         ))
+
+                        # Calculate signals for visualization
+                        short_col = f'EMA_{short_p}'
+                        long_col = f'EMA_{long_p}'
+                        
+                        # Create signal series
+                        crossover = (df_emas[short_col] > df_emas[long_col]).astype(int)
+                        # 1 = Short > Long, 0 = Short < Long
+                        # Diff: 1 = Buy (0->1), -1 = Sell (1->0)
+                        signals = crossover.diff()
+                        
+                        buy_signals = df_emas[signals == 1]
+                        sell_signals = df_emas[signals == -1]
+                        
+                        # Add Buy Signals
+                        fig.add_trace(go.Scatter(
+                            x=buy_signals.index,
+                            y=buy_signals['Close'],
+                            mode='markers',
+                            name='Buy Signal',
+                            marker=dict(symbol='triangle-up', size=12, color='#22c55e', line=dict(width=1, color='darkgreen'))
+                        ))
+
+                        # Add Sell Signals
+                        fig.add_trace(go.Scatter(
+                            x=sell_signals.index,
+                            y=sell_signals['Close'],
+                            mode='markers',
+                            name='Sell Signal',
+                            marker=dict(symbol='triangle-down', size=12, color='#ef4444', line=dict(width=1, color='darkred'))
+                        ))
                         
                         # Update layout
                         fig.update_layout(
