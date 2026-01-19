@@ -63,19 +63,27 @@
         </div>
     </div>
 
+    <!-- Chart Data Storage -->
+    <script id="data-{{ loop.index }}" type="application/json">
+        {{ res.chart_data | tojson | safe }}
+    </script>
+
     <!-- Chart Script -->
     <script>
         (function () {
             const ctx = document.getElementById('chart-{{ loop.index }}').getContext('2d');
-            // Parse data from Jinja
-            const data = {{ res.chart_data | tojson | safe
-        }};
-        const shortPeriod = {{ res.best_pair.short }};
+
+            // Parse data from hidden JSON script to avoid linter errors
+            const rawData = document.getElementById('data-{{ loop.index }}').textContent;
+            const data = JSON.parse(rawData);
+
+            // These will render as direct numbers, which is valid JS syntax
+            const shortPeriod = {{ res.best_pair.short }
+        };
         const longPeriod = {{ res.best_pair.long }};
 
         const labels = data.map(d => d.Date);
         const prices = data.map(d => d.Close);
-        // Use bracket notation with constructed string key
         const emaShort = data.map(d => d[`EMA_${shortPeriod}`]);
         const emaLong = data.map(d => d[`EMA_${longPeriod}`]);
 
