@@ -126,5 +126,10 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0):
             best_gain = gain
             best_pair = (short_p, long_p)
             best_trades_count = len(trades)
+
+    # Calculate Buy & Hold Return
+    start_price = df['Close'].iloc[0]
+    end_price = df['Close'].iloc[-1]
+    buy_hold_return = ((end_price - start_price) / start_price) * 100
             
-    return best_pair, best_gain, best_trades_count, results, df_emas
+    return best_pair, best_gain, best_trades_count, buy_hold_return, results, df_emas
