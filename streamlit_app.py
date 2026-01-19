@@ -44,9 +44,8 @@ st.title("📈 Momentum Signal Trading App")
 st.markdown("Identify trading momentum signals based on Exponential Moving Average (EMA) crossovers.")
 
 # Sidebar inputs
-with st.sidebar:
-    st.header("Configuration")
-    
+# Configuration expander
+with st.expander("Configuration", expanded=True):
     # Tickers input
     tickers_input = st.text_input(
         "Stock Tickers (comma separated)",
@@ -57,26 +56,32 @@ with st.sidebar:
     # MA Periods
     st.subheader("Moving Average Periods")
     periods = []
-    cols = st.columns(4)
+    cols = st.columns(8) # Use more columns for horizontal layout
     period_options = [5, 10, 20, 25, 50, 100, 150, 200]
     for idx, period in enumerate(period_options):
-        with cols[idx % 4]:
+        with cols[idx]:
             if st.checkbox(str(period), value=True, key=f"period_{period}"):
                 periods.append(period)
     
-    # Date range
-    st.subheader("Date Range")
-    start_date = st.date_input(
-        "Start Date",
-        value=datetime(2024, 1, 1)
-    )
-    end_date = st.date_input(
-        "End Date",
-        value=datetime(2026, 1, 1)
-    )
+    # Settings row
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        start_date = st.date_input(
+            "Start Date",
+            value=datetime(2024, 1, 1)
+        )
+    
+    with col2:
+        end_date = st.date_input(
+            "End Date",
+            value=datetime(2026, 1, 1)
+        )
+        
+    with col3:
+        wait_days = st.number_input("Crossing Wait (days)", min_value=0, value=0, help="Wait N days to confirm crossover signal")
     
     # Run button
-    wait_days = st.number_input("Crossing Wait (days)", min_value=0, value=0, help="Wait N days to confirm crossover signal")
     run_analysis = st.button("🚀 Run Analysis", type="primary")
 
 # Main content
