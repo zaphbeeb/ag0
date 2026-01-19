@@ -105,6 +105,7 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0):
     """
     best_gain = -float('inf')
     best_pair = (0, 0)
+    best_trades_count = 0
     results = []
 
     # Calculate all EMAs once
@@ -113,7 +114,7 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0):
     import itertools
     for short_p, long_p in itertools.combinations(sorted(periods), 2):
         signals = find_crossovers(df_emas, short_p, long_p, wait_days=wait_days)
-        gain, _ = backtest_strategy(df_emas, signals)
+        gain, trades = backtest_strategy(df_emas, signals)
         
         results.append({
             'pair': f"{short_p}/{long_p}",
@@ -123,5 +124,6 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0):
         if gain > best_gain:
             best_gain = gain
             best_pair = (short_p, long_p)
+            best_trades_count = len(trades)
             
-    return best_pair, best_gain, results, df_emas
+    return best_pair, best_gain, best_trades_count, results, df_emas
