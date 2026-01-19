@@ -175,8 +175,8 @@ if run_analysis:
                         # Diff: 1 = Buy (0->1), -1 = Sell (1->0)
                         signals = confirmed_crossover.diff().fillna(0)
                         
-                        buy_signals = df_emas[signals == 1]
-                        sell_signals = df_emas[signals == -1]
+                        buy_signals = df_mas[signals == 1]
+                        sell_signals = df_mas[signals == -1]
                         
                         # Add Buy Signals
                         fig.add_trace(go.Scatter(
