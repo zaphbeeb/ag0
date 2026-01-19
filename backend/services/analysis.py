@@ -118,7 +118,8 @@ def optimize_pairs(df: pd.DataFrame, periods: list[int], wait_days: int = 0):
         
         results.append({
             'pair': f"{short_p}/{long_p}",
-            'gain': gain
+            'gain': gain,
+            'trades': len(trades)
         })
         
         if gain > best_gain:
