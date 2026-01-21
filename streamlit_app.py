@@ -165,14 +165,21 @@ with tab_analysis:
                                         curr_s = df_mas[s_col].iloc[-1]
                                         curr_l = df_mas[l_col].iloc[-1]
                                         
-                                        # Trend
+                                        # Trend and Est Crossover Days
                                         trend = "N/A"
+                                        est_crossover_days = None
                                         if len(df_mas) >= 2:
                                             prev_s = df_mas[s_col].iloc[-2]
                                             prev_l = df_mas[l_col].iloc[-2]
                                             curr_diff = abs(curr_s - curr_l)
                                             prev_diff = abs(prev_s - prev_l)
                                             trend = "Converging" if curr_diff < prev_diff else "Diverging"
+                                            
+                                            # Calculate Est Crossover Days
+                                            if trend == "Converging":
+                                                convergence_rate = prev_diff - curr_diff
+                                                if convergence_rate > 0:
+                                                    est_crossover_days = int(curr_diff / convergence_rate)
                                             
                                         # Last Crossover
                                         crossover_data = None
@@ -191,10 +198,12 @@ with tab_analysis:
                                             'check_data': {
                                                 'short_val': round(curr_s, 2),
                                                 'long_val': round(curr_l, 2),
-                                                'trend': trend
+                                                'trend': trend,
+                                                'est_crossover_days': est_crossover_days
                                             },
                                             'crossover': crossover_data
                                         }
+
 
                                         alert_service.add_alert(ticker, best_pair[0], best_pair[1], ma_type, initial_data=initial_data)
                                         st.toast(f"Alert added: {ticker} {best_pair[0]}/{best_pair[1]}", icon="✅")
