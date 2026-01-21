@@ -5,10 +5,20 @@ import threading
 import time
 import pandas as pd
 from datetime import datetime
+import os
 import yfinance as yf
 from .analysis import calculate_mas, find_crossovers
 
-ALERTS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'alerts.json')
+# Determine alerts file path
+# If STORAGE_PATH or STORAGE_DIR is set, use it. Otherwise default to project root.
+storage_dir = os.environ.get('STORAGE_PATH') or os.environ.get('STORAGE_DIR')
+if storage_dir:
+    # Ensure directory exists
+    os.makedirs(storage_dir, exist_ok=True)
+    ALERTS_FILE = os.path.join(storage_dir, 'alerts.json')
+else:
+    # Default to project root
+    ALERTS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'alerts.json')
 
 class AlertService:
     def __init__(self):
