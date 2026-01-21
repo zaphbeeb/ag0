@@ -16,6 +16,18 @@ def get_alert_service():
 
 alert_service = get_alert_service()
 
+# Check for notifications
+if alert_service.alerts:
+    for alert in alert_service.alerts:
+        trigger_time = alert.get('last_triggered')
+        if trigger_time:
+            try:
+                t_date = datetime.fromisoformat(trigger_time).date()
+                if t_date == datetime.now().date():
+                    st.toast(f"🔔 Signal triggered for {alert['ticker']} ({alert['ma_type']} {alert['short_p']}/{alert['long_p']})", icon="⚠️")
+            except ValueError:
+                pass
+
 # Page config
 st.set_page_config(
     page_title="Momentum Signal Trading App",
