@@ -153,8 +153,14 @@ with tab_analysis:
                             with h_c2:
                                 # Use a unique key for each ticker
                                 if st.button("🔔 Track Best Pair", key=f"track_{ticker}", help=f"Add alert for {ticker} {ma_type} {best_pair[0]}/{best_pair[1]}"):
-                                    alert_service.add_alert(ticker, best_pair[0], best_pair[1], ma_type)
-                                    st.toast(f"Alert added: {ticker} {best_pair[0]}/{best_pair[1]}", icon="✅")
+                                    # Check for duplicates
+                                    exists = any(a['ticker'] == ticker and a['short_p'] == best_pair[0] and a['long_p'] == best_pair[1] and a['ma_type'] == ma_type for a in alert_service.alerts)
+                                    
+                                    if not exists:
+                                        alert_service.add_alert(ticker, best_pair[0], best_pair[1], ma_type)
+                                        st.toast(f"Alert added: {ticker} {best_pair[0]}/{best_pair[1]}", icon="✅")
+                                    else:
+                                        st.toast(f"Alert already exists for {ticker}", icon="ℹ️")
                             
                             # Display metrics
                             # Display metrics
