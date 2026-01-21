@@ -5,7 +5,6 @@ import threading
 import time
 import pandas as pd
 from datetime import datetime
-import os
 import yfinance as yf
 from .analysis import calculate_mas, find_crossovers
 
