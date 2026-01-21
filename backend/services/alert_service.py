@@ -114,12 +114,21 @@ class AlertService:
                 
                 trend = "Converging" if curr_diff < prev_diff else "Diverging"
                 
+                # Estimated Crossover Days
+                est_crossover_days = None
+                if trend == "Converging":
+                    convergence_rate = prev_diff - curr_diff  # How much gap closed in 1 day
+                    if convergence_rate > 0:
+                        est_crossover_days = int(curr_diff / convergence_rate)
+                
                 # Update alert data
                 alert['last_check_data'] = {
                     'short_val': round(curr_s, 2),
                     'long_val': round(curr_l, 2),
-                    'trend': trend
+                    'trend': trend,
+                    'est_crossover_days': est_crossover_days
                 }
+
             
             # Crossover logic
             signals = find_crossovers(df_mas, alert['short_p'], alert['long_p'], wait_days=0, ma_type=alert['ma_type'])
