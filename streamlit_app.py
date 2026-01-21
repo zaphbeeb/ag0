@@ -6,6 +6,15 @@ import sys
 sys.path.append('backend')
 from services.market_data import fetch_historical_data
 from services.analysis import optimize_pairs
+from services.alert_service import AlertService
+
+@st.cache_resource
+def get_alert_service():
+    service = AlertService()
+    service.start_background_scheduler()
+    return service
+
+alert_service = get_alert_service()
 
 # Page config
 st.set_page_config(
