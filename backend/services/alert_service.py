@@ -8,6 +8,11 @@ from datetime import datetime
 import yfinance as yf
 from .analysis import calculate_mas, find_crossovers
 
+# Configure logging
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 # Determine alerts file path
 # If STORAGE_PATH or STORAGE_DIR is set, use it. Otherwise default to project root.
 storage_dir = os.environ.get('STORAGE_PATH') or os.environ.get('STORAGE_DIR')
@@ -28,15 +33,15 @@ class AlertService:
 
     def load_alerts(self):
         if not os.path.exists(ALERTS_FILE):
-            print(f"Alerts file not found at {ALERTS_FILE}, creating new.")
+            logger.info(f"Alerts file not found at {ALERTS_FILE}, creating new.")
             return []
         try:
             with open(ALERTS_FILE, 'r') as f:
                 alerts = json.load(f)
-                print(f"Loaded {len(alerts)} alerts from {ALERTS_FILE}")
+                logger.info(f"Loaded {len(alerts)} alerts from {ALERTS_FILE}")
                 return alerts
         except Exception as e:
-            print(f"Error loading alerts: {e}")
+            logger.error(f"Error loading alerts: {e}")
             return []
 
     def save_alerts(self):
@@ -155,7 +160,7 @@ class AlertService:
                 }
                 
         except Exception as e:
-            print(f"Error checking alert {alert['id']}: {e}")
+            logger.error(f"Error checking alert {alert['id']}: {e}")
         return None
 
     def check_alerts(self):
