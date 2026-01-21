@@ -369,21 +369,22 @@ with tab_alerts:
         # Using columns for simple layout
         
         # Header
-        h1, h2, h3, h4, h5, h6, h7, h8, h9 = st.columns([1.5, 1, 1, 1, 1, 1, 1.5, 1.5, 1])
+        h1, h2, h3, h4, h5, h6, h7, h8, h9, h10 = st.columns([1.5, 1, 0.8, 1, 1, 1, 1, 1.5, 1.5, 0.8])
         h1.markdown("**Ticker**")
         h2.markdown("**Pair**")
         h3.markdown("**Type**")
         h4.markdown("**Short Val**")
         h5.markdown("**Long Val**")
         h6.markdown("**Trend**")
-        h7.markdown("**Last Crossover**")
-        h8.markdown("**Last Checked**")
-        h9.markdown("**Action**")
+        h7.markdown("**Est. Days**")
+        h8.markdown("**Last Crossover**")
+        h9.markdown("**Last Checked**")
+        h10.markdown("**Action**")
         
         st.divider()
         
         for alert in alerts:
-            c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns([1.5, 1, 1, 1, 1, 1, 1.5, 1.5, 1])
+            c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 = st.columns([1.5, 1, 0.8, 1, 1, 1, 1, 1.5, 1.5, 0.8])
             c1.write(alert['ticker'])
             c2.write(f"{alert['short_p']} / {alert['long_p']}")
             c3.write(alert['ma_type'])
@@ -394,20 +395,24 @@ with tab_alerts:
             c5.write(data.get('long_val', '-'))
             c6.write(data.get('trend', '-'))
             
+            # Estimated Crossover Days
+            est_days = data.get('est_crossover_days')
+            c7.write(str(est_days) if est_days is not None else "N/A")
+            
             # Last Crossover
             last_cross = alert.get('last_crossover')
             if last_cross:
                 icon = "🟢" if last_cross['signal'] == 1 else "🔴" # Green Up, Red Down
                 arrow = "⬆️" if last_cross['signal'] == 1 else "⬇️"
-                c7.write(f"{icon} {arrow} {last_cross['date']}")
+                c8.write(f"{icon} {arrow} {last_cross['date']}")
             else:
-                c7.write("-")
+                c8.write("-")
             
             # Format date friendly
             last_check = alert.get('last_checked')
-            c8.write(last_check[:10] if last_check else "Never")
+            c9.write(last_check[:10] if last_check else "Never")
             
-            if c9.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
+            if c10.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
                 alert_service.delete_alert(alert['id'])
                 st.rerun()
     else:
