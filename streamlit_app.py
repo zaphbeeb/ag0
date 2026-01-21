@@ -140,10 +140,18 @@ with tab_analysis:
                                 st.warning(f"No data available for {ticker}")
                                 continue
                             
-                            st.header(f"📊 {ticker}")
-                            
                             # Optimize pairs
                             best_pair, best_gain, best_trades_count, buy_hold_return, opt_results, df_mas = optimize_pairs(df, periods, wait_days=wait_days, ma_type=ma_type)
+                            
+                            # Header with Quick Add Button
+                            h_c1, h_c2 = st.columns([3, 1])
+                            with h_c1:
+                                st.header(f"📊 {ticker}")
+                            with h_c2:
+                                # Use a unique key for each ticker
+                                if st.button("🔔 Track Best Pair", key=f"track_{ticker}", help=f"Add alert for {ticker} {ma_type} {best_pair[0]}/{best_pair[1]}"):
+                                    alert_service.add_alert(ticker, best_pair[0], best_pair[1], ma_type)
+                                    st.toast(f"Alert added: {ticker} {best_pair[0]}/{best_pair[1]}", icon="✅")
                             
                             # Display metrics
                             # Display metrics
