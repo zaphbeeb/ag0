@@ -52,8 +52,17 @@ class AlertService:
             'long_p': int(long_p),
             'ma_type': str(ma_type),
             'created_at': datetime.now().isoformat(),
-            'last_triggered': None
+            'last_triggered': None,
+            'last_check_data': {
+                'short_val': None,
+                'long_val': None,
+                'trend': 'N/A'
+            }
         }
+        
+        # Initial check to populate data
+        self._check_single_alert(alert)
+        
         with self._lock:
             self.alerts.append(alert)
         self.save_alerts()
@@ -64,46 +73,77 @@ class AlertService:
             self.alerts = [a for a in self.alerts if a['id'] != alert_id]
         self.save_alerts()
 
+    def _check_single_alert(self, alert):
+        try:
+            ticker = alert['ticker']
+            df = yf.download(ticker, period="1y", progress=False)
+            
+            if df.empty:
+                return None
+            
+            periods = [alert['short_p'], alert['long_p']]
+            df_mas = calculate_mas(df, periods, alert['ma_type'])
+            
+            # Extract last 2 rows for trend calculation
+            if len(df_mas) >= 2:
+                # Get series
+                s_col = f"{alert['ma_type']}_{alert['short_p']}"
+                l_col = f"{alert['ma_type']}_{alert['long_p']}"
+                
+                # Last values
+                curr_s = df_mas[s_col].iloc[-1]
+                curr_l = df_mas[l_col].iloc[-1]
+                prev_s = df_mas[s_col].iloc[-2]
+                prev_l = df_mas[l_col].iloc[-2]
+                
+                # Trend
+                curr_diff = abs(curr_s - curr_l)
+                prev_diff = abs(prev_s - prev_l)
+                
+                trend = "Converging" if curr_diff < prev_diff else "Diverging"
+                
+                # Update alert data
+                alert['last_check_data'] = {
+                    'short_val': round(curr_s, 2),
+                    'long_val': round(curr_l, 2),
+                    'trend': trend
+                }
+            
+            # Crossover logic
+            signals = find_crossovers(df_mas, alert['short_p'], alert['long_p'], wait_days=0, ma_type=alert['ma_type'])
+            last_signal = signals.iloc[-1]['Signal']
+            
+            if last_signal != 0:
+                alert['last_triggered'] = datetime.now().isoformat()
+                return {
+                    'ticker': ticker,
+                    'type': 'Buy' if last_signal == 1 else 'Sell',
+                    'symbol': '📈' if last_signal == 1 else '📉',
+                    'price': df['Close'].iloc[-1]
+                }
+                
+        except Exception as e:
+            print(f"Error checking alert {alert['id']}: {e}")
+        return None
+
     def check_alerts(self):
         """
         New Logic: Check alerts.
         This function should be called daily.
         """
         triggered = []
-        for alert in self.alerts:
-            try:
-                # Fetch recent data (enough for long_p)
-                # Need at least long_p + some buffer. 300 days is safe.
-                ticker = alert['ticker']
-                df = yf.download(ticker, period="1y", progress=False)
-                
-                if df.empty:
-                    continue
-                
-                periods = [alert['short_p'], alert['long_p']]
-                df_mas = calculate_mas(df, periods, alert['ma_type'])
-                
-                # Check crossover for ONLY the last day? 
-                # Or wait logic?
-                # User asked for "notification if a crossover is detected"
-                # We check the most recent crossover.
-                
-                signals = find_crossovers(df_mas, alert['short_p'], alert['long_p'], wait_days=0, ma_type=alert['ma_type'])
-                
-                # Get last signal
-                last_signal = signals.iloc[-1]['Signal']
-                
-                if last_signal != 0:
-                    alert['last_triggered'] = datetime.now().isoformat()
-                    triggered.append({
-                        'ticker': ticker,
-                        'type': 'Buy' if last_signal == 1 else 'Sell',
-                        'symbol': '📈' if last_signal == 1 else '📉',
-                        'price': df['Close'].iloc[-1]
-                    })
-                    
-            except Exception as e:
-                print(f"Error checking alert {alert['id']}: {e}")
+        # Create a copy to iterate safely? No need if not modifying list structure.
+        # But we modify alert dicts in place.
+        
+        # Thread safety? self.alerts might change.
+        # Iterate over a copy of list
+        with self._lock:
+            alerts_copy = list(self.alerts)
+            
+        for alert in alerts_copy:
+            result = self._check_single_alert(alert)
+            if result:
+                triggered.append(result)
         
         self.save_alerts()
         return triggered
