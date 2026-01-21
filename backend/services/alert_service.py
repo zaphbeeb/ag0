@@ -8,7 +8,7 @@ from datetime import datetime
 import yfinance as yf
 from .analysis import calculate_mas, find_crossovers
 
-ALERTS_FILE = 'alerts.json'
+ALERTS_FILE = os.path.join(os.getcwd(), 'alerts.json')
 
 class AlertService:
     def __init__(self):
