@@ -44,7 +44,7 @@ class AlertService:
             with open(ALERTS_FILE, 'w') as f:
                 json.dump(self.alerts, f, indent=4)
 
-    def add_alert(self, ticker, short_p, long_p, ma_type='EMA'):
+    def add_alert(self, ticker, short_p, long_p, ma_type='EMA', initial_data=None):
         alert = {
             'id': str(uuid.uuid4()),
             'ticker': str(ticker).upper(),
@@ -57,11 +57,19 @@ class AlertService:
                 'short_val': None,
                 'long_val': None,
                 'trend': 'N/A'
-            }
+            },
+            'last_crossover': None
         }
         
-        # Initial check to populate data
-        self._check_single_alert(alert)
+        if initial_data:
+            # Populate from provided data
+            if 'check_data' in initial_data:
+                alert['last_check_data'] = initial_data['check_data']
+            if 'crossover' in initial_data:
+                alert['last_crossover'] = initial_data['crossover']
+        else:
+            # Initial check to populate data
+            self._check_single_alert(alert)
         
         with self._lock:
             self.alerts.append(alert)
