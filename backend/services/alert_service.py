@@ -83,6 +83,9 @@ class AlertService:
 
     def _check_single_alert(self, alert):
         try:
+            # Update last_checked timestamp
+            alert['last_checked'] = datetime.now().isoformat()
+            
             ticker = alert['ticker']
             df = yf.download(ticker, period="1y", progress=False)
             
@@ -91,6 +94,7 @@ class AlertService:
             
             periods = [alert['short_p'], alert['long_p']]
             df_mas = calculate_mas(df, periods, alert['ma_type'])
+
             
             # Extract last 2 rows for trend calculation
             if len(df_mas) >= 2:
