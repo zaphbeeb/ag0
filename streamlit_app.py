@@ -404,8 +404,8 @@ with tab_alerts:
                 c7.write("-")
             
             # Format date friendly
-            last_trig = alert.get('last_triggered')
-            c8.write(last_trig[:10] if last_trig else "Never")
+            last_check = alert.get('last_checked')
+            c8.write(last_check[:10] if last_check else "Never")
             
             if c9.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
                 alert_service.delete_alert(alert['id'])
