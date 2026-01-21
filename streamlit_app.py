@@ -383,22 +383,21 @@ with tab_alerts:
         # Using columns for simple layout
         
         # Header
-        h1, h2, h3, h4, h5, h6, h7, h8, h9, h10 = st.columns([1.5, 1, 0.8, 1, 1, 1, 1, 1.5, 1.5, 0.8])
+        h1, h2, h3, h4, h5, h6, h7, h8, h9 = st.columns([1.5, 1, 0.8, 1, 1, 1, 1.5, 1.5, 0.8])
         h1.markdown("**Ticker**")
         h2.markdown("**Pair**")
         h3.markdown("**Type**")
         h4.markdown("**Short Val**")
         h5.markdown("**Long Val**")
         h6.markdown("**Trend**")
-        h7.markdown("**Days to Crossover**")
-        h8.markdown("**Last Crossover**")
-        h9.markdown("**Last Checked**")
-        h10.markdown("**Action**")
+        h7.markdown("**Last Crossover**")
+        h8.markdown("**Last Checked**")
+        h9.markdown("**Action**")
         
         st.divider()
         
         for alert in alerts:
-            c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 = st.columns([1.5, 1, 0.8, 1, 1, 1, 1, 1.5, 1.5, 0.8])
+            c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns([1.5, 1, 0.8, 1, 1, 1, 1.5, 1.5, 0.8])
             c1.write(alert['ticker'])
             c2.write(f"{alert['short_p']} / {alert['long_p']}")
             c3.write(alert['ma_type'])
@@ -409,24 +408,34 @@ with tab_alerts:
             c5.write(data.get('long_val', '-'))
             c6.write(data.get('trend', '-'))
             
-            # Estimated Crossover Days
-            est_days = data.get('est_crossover_days')
-            c7.write(str(est_days) if est_days is not None else "N/A")
-            
             # Last Crossover
             last_cross = alert.get('last_crossover')
             if last_cross:
                 icon = "🟢" if last_cross['signal'] == 1 else "🔴" # Green Up, Red Down
                 arrow = "⬆️" if last_cross['signal'] == 1 else "⬇️"
-                c8.write(f"{icon} {arrow} {last_cross['date']}")
+                date_str = last_cross['date']
+                
+                # Check if within 7 days
+                try:
+                    c_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    days_diff = (datetime.now().date() - c_date).days
+                    
+                    display_text = f"{icon} {arrow} {date_str}"
+                    if 0 <= days_diff <= 7:
+                        # Light yellow highlight
+                        c7.markdown(f"<span style='background-color: #fef9c3; color: black; padding: 2px 4px; border-radius: 4px;'>{display_text}</span>", unsafe_allow_html=True)
+                    else:
+                        c7.write(display_text)
+                except ValueError:
+                    c7.write(f"{icon} {arrow} {date_str}")
             else:
-                c8.write("-")
+                c7.write("-")
             
             # Format date friendly
             last_check = alert.get('last_checked')
-            c9.write(last_check[:10] if last_check else "Never")
+            c8.write(last_check[:10] if last_check else "Never")
             
-            if c10.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
+            if c9.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
                 alert_service.delete_alert(alert['id'])
                 st.rerun()
     else:
