@@ -110,10 +110,13 @@ with tab_analysis:
         ma_type = st.radio("Moving Average Type", ["EMA", "SMA"], horizontal=True)
 
         # Run button
-        run_analysis = st.button("🚀 Run Analysis", type="primary")
+        def enable_run():
+            st.session_state.analysis_run = True
+            
+        run_analysis = st.button("🚀 Run Analysis", type="primary", on_click=enable_run)
 
     # Analysis Results
-    if run_analysis:
+    if st.session_state.get('analysis_run', False):
         if not periods:
             st.error("Please select at least one moving average period.")
         elif len(periods) < 2:
