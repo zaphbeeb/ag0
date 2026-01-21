@@ -157,7 +157,46 @@ with tab_analysis:
                                     exists = any(a['ticker'] == ticker and a['short_p'] == best_pair[0] and a['long_p'] == best_pair[1] and a['ma_type'] == ma_type for a in alert_service.alerts)
                                     
                                     if not exists:
-                                        alert_service.add_alert(ticker, best_pair[0], best_pair[1], ma_type)
+                                        # Compute initial data from df_mas to avoid re-fetch
+                                        s_col = f"{ma_type}_{best_pair[0]}"
+                                        l_col = f"{ma_type}_{best_pair[1]}"
+                                        
+                                        # Values
+                                        curr_s = df_mas[s_col].iloc[-1]
+                                        curr_l = df_mas[l_col].iloc[-1]
+                                        
+                                        # Trend
+                                        trend = "N/A"
+                                        if len(df_mas) >= 2:
+                                            prev_s = df_mas[s_col].iloc[-2]
+                                            prev_l = df_mas[l_col].iloc[-2]
+                                            curr_diff = abs(curr_s - curr_l)
+                                            prev_diff = abs(prev_s - prev_l)
+                                            trend = "Converging" if curr_diff < prev_diff else "Diverging"
+                                            
+                                        # Last Crossover
+                                        crossover_data = None
+                                        # Re-use logic: raw crossover
+                                        from services.analysis import find_crossovers # Import here or ensure top level
+                                        signals = find_crossovers(df_mas, best_pair[0], best_pair[1], wait_days=wait_days, ma_type=ma_type)
+                                        non_zero_signals = signals[signals['Signal'] != 0]
+                                        if not non_zero_signals.empty:
+                                            last_occ = non_zero_signals.iloc[-1]
+                                            crossover_data = {
+                                                'signal': int(last_occ['Signal']),
+                                                'date': last_occ.name.strftime('%Y-%m-%d')
+                                            }
+                                            
+                                        initial_data = {
+                                            'check_data': {
+                                                'short_val': round(curr_s, 2),
+                                                'long_val': round(curr_l, 2),
+                                                'trend': trend
+                                            },
+                                            'crossover': crossover_data
+                                        }
+
+                                        alert_service.add_alert(ticker, best_pair[0], best_pair[1], ma_type, initial_data=initial_data)
                                         st.toast(f"Alert added: {ticker} {best_pair[0]}/{best_pair[1]}", icon="✅")
                                     else:
                                         st.toast(f"Alert already exists for {ticker}", icon="ℹ️")
@@ -287,9 +326,18 @@ with tab_analysis:
             """)
 
 with tab_alerts:
-    st.header("🔔 Managed Alerts")
-    st.markdown("Add alerts to be checked daily regarding moving average crossovers.")
-    
+    # Header Row with Reset Button
+    c_head, c_btn = st.columns([4,1])
+    with c_head:
+         st.header("🔔 Managed Alerts")
+         st.markdown("Add alerts to be checked daily regarding moving average crossovers.")
+    with c_btn:
+         if st.button("🔄 Run Updates Now"):
+             with st.spinner("Checking all alerts..."):
+                 alert_service.check_alerts()
+             st.success("Alerts updated!")
+             st.rerun()
+
     # Add Alert Form
     with st.expander("➕ Add New Alert", expanded=True):
         with st.form("add_alert_form"):
