@@ -10,8 +10,15 @@ from .analysis import calculate_mas, find_crossovers
 
 # Configure logging
 import logging
+import pytz
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Constants
+try:
+    TZ = pytz.timezone('US/Pacific')
+except Exception:
+    TZ = pytz.utc
 
 # Determine alerts file path
 # If STORAGE_PATH or STORAGE_DIR is set, use it. Otherwise default to project root.
@@ -56,7 +63,7 @@ class AlertService:
             'short_p': int(short_p),
             'long_p': int(long_p),
             'ma_type': str(ma_type),
-            'created_at': datetime.now().isoformat(),
+            'created_at': datetime.now(TZ).isoformat(),
             'last_triggered': None,
             'last_check_data': {
                 'short_val': None,
@@ -89,7 +96,7 @@ class AlertService:
     def _check_single_alert(self, alert):
         try:
             # Update last_checked timestamp
-            alert['last_checked'] = datetime.now().isoformat()
+            alert['last_checked'] = datetime.now(TZ).isoformat()
             
             ticker = alert['ticker']
             df = yf.download(ticker, period="1y", progress=False)
@@ -154,7 +161,7 @@ class AlertService:
             last_signal = signals.iloc[-1]['Signal']
             
             if last_signal != 0:
-                alert['last_triggered'] = datetime.now().isoformat()
+                alert['last_triggered'] = datetime.now(TZ).isoformat()
                 return {
                     'ticker': ticker,
                     'type': 'Buy' if last_signal == 1 else 'Sell',
@@ -194,7 +201,7 @@ class AlertService:
 
         def run_loop():
             while not self._stop_event.is_set():
-                now = datetime.now()
+                now = datetime.now(TZ)
                 # Run daily check at midnight (or just run once every 24h? or check every hour if midnight passed?)
                 # For simplicity in this demo, we might just check periodically or if the user requests.
                 # User request: "calculates ... daily at midnight"
