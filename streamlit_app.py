@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import sys
 sys.path.append('backend')
 from services.market_data import fetch_historical_data
-from services.analysis import optimize_pairs
+from services.analysis import optimize_pairs, find_crossovers
 from services.alert_service import AlertService
 
 @st.cache_resource
@@ -184,7 +184,7 @@ with tab_analysis:
                                         # Last Crossover
                                         crossover_data = None
                                         # Re-use logic: raw crossover
-                                        from services.analysis import find_crossovers # Import here or ensure top level
+                                        # find_crossovers imported at top level
                                         signals = find_crossovers(df_mas, best_pair[0], best_pair[1], wait_days=wait_days, ma_type=ma_type)
                                         non_zero_signals = signals[signals['Signal'] != 0]
                                         if not non_zero_signals.empty:
