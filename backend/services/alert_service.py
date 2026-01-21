@@ -8,43 +8,51 @@ from datetime import datetime
 import yfinance as yf
 from .analysis import calculate_mas, find_crossovers
 
-ALERTS_FILE = os.path.join(os.getcwd(), 'alerts.json')
+ALERTS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'alerts.json')
 
 class AlertService:
     def __init__(self):
+        self._lock = threading.Lock()
         self.alerts = self.load_alerts()
         self._scheduler_thread = None
         self._stop_event = threading.Event()
 
     def load_alerts(self):
         if not os.path.exists(ALERTS_FILE):
+            print(f"Alerts file not found at {ALERTS_FILE}, creating new.")
             return []
         try:
             with open(ALERTS_FILE, 'r') as f:
-                return json.load(f)
-        except:
+                alerts = json.load(f)
+                print(f"Loaded {len(alerts)} alerts from {ALERTS_FILE}")
+                return alerts
+        except Exception as e:
+            print(f"Error loading alerts: {e}")
             return []
 
     def save_alerts(self):
-        with open(ALERTS_FILE, 'w') as f:
-            json.dump(self.alerts, f, indent=4)
+        with self._lock:
+            with open(ALERTS_FILE, 'w') as f:
+                json.dump(self.alerts, f, indent=4)
 
     def add_alert(self, ticker, short_p, long_p, ma_type='EMA'):
         alert = {
             'id': str(uuid.uuid4()),
-            'ticker': ticker.upper(),
-            'short_p': short_p,
-            'long_p': long_p,
-            'ma_type': ma_type,
+            'ticker': str(ticker).upper(),
+            'short_p': int(short_p),
+            'long_p': int(long_p),
+            'ma_type': str(ma_type),
             'created_at': datetime.now().isoformat(),
             'last_triggered': None
         }
-        self.alerts.append(alert)
+        with self._lock:
+            self.alerts.append(alert)
         self.save_alerts()
         return alert
 
     def delete_alert(self, alert_id):
-        self.alerts = [a for a in self.alerts if a['id'] != alert_id]
+        with self._lock:
+            self.alerts = [a for a in self.alerts if a['id'] != alert_id]
         self.save_alerts()
 
     def check_alerts(self):
