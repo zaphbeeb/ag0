@@ -385,7 +385,7 @@ with tab_alerts:
         h4.markdown("**Short Val**")
         h5.markdown("**Long Val**")
         h6.markdown("**Trend**")
-        h7.markdown("**Est. Days**")
+        h7.markdown("**Days to Crossover**")
         h8.markdown("**Last Crossover**")
         h9.markdown("**Last Checked**")
         h10.markdown("**Action**")
