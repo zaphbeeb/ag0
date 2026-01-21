@@ -321,20 +321,21 @@ with tab_alerts:
         # Using columns for simple layout
         
         # Header
-        h1, h2, h3, h4, h5, h6, h7, h8 = st.columns([1.5, 1, 1, 1, 1, 1, 1.5, 1])
+        h1, h2, h3, h4, h5, h6, h7, h8, h9 = st.columns([1.5, 1, 1, 1, 1, 1, 1.5, 1.5, 1])
         h1.markdown("**Ticker**")
         h2.markdown("**Pair**")
         h3.markdown("**Type**")
         h4.markdown("**Short Val**")
         h5.markdown("**Long Val**")
         h6.markdown("**Trend**")
-        h7.markdown("**Last Checked**")
-        h8.markdown("**Action**")
+        h7.markdown("**Last Crossover**")
+        h8.markdown("**Last Checked**")
+        h9.markdown("**Action**")
         
         st.divider()
         
         for alert in alerts:
-            c1, c2, c3, c4, c5, c6, c7, c8 = st.columns([1.5, 1, 1, 1, 1, 1, 1.5, 1])
+            c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns([1.5, 1, 1, 1, 1, 1, 1.5, 1.5, 1])
             c1.write(alert['ticker'])
             c2.write(f"{alert['short_p']} / {alert['long_p']}")
             c3.write(alert['ma_type'])
@@ -345,11 +346,20 @@ with tab_alerts:
             c5.write(data.get('long_val', '-'))
             c6.write(data.get('trend', '-'))
             
+            # Last Crossover
+            last_cross = alert.get('last_crossover')
+            if last_cross:
+                icon = "🟢" if last_cross['signal'] == 1 else "🔴" # Green Up, Red Down
+                arrow = "⬆️" if last_cross['signal'] == 1 else "⬇️"
+                c7.write(f"{icon} {arrow} {last_cross['date']}")
+            else:
+                c7.write("-")
+            
             # Format date friendly
             last_trig = alert.get('last_triggered')
-            c7.write(last_trig[:10] if last_trig else "Never")
+            c8.write(last_trig[:10] if last_trig else "Never")
             
-            if c8.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
+            if c9.button("🗑️", key=f"del_{alert['id']}", help="Delete Alert"):
                 alert_service.delete_alert(alert['id'])
                 st.rerun()
     else:
