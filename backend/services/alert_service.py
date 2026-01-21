@@ -111,6 +111,17 @@ class AlertService:
             
             # Crossover logic
             signals = find_crossovers(df_mas, alert['short_p'], alert['long_p'], wait_days=0, ma_type=alert['ma_type'])
+            
+            # Find latest historical crossover (Last Crossover column)
+            non_zero_signals = signals[signals['Signal'] != 0]
+            if not non_zero_signals.empty:
+                last_occ = non_zero_signals.iloc[-1]
+                alert['last_crossover'] = {
+                    'signal': int(last_occ['Signal']),
+                    'date': last_occ.name.strftime('%Y-%m-%d')
+                }
+            
+            # Notification trigger (only if it happened just now/today)
             last_signal = signals.iloc[-1]['Signal']
             
             if last_signal != 0:
