@@ -117,14 +117,17 @@ class AlertService:
                 curr_diff = abs(curr_s - curr_l)
                 prev_diff = abs(prev_s - prev_l)
                 
-                trend = "Converging" if curr_diff < prev_diff else "Diverging"
-                
-                # Estimated Crossover Days
                 est_crossover_days = None
-                if trend == "Converging":
-                    convergence_rate = prev_diff - curr_diff  # How much gap closed in 1 day
-                    if convergence_rate > 0:
+                if curr_diff < prev_diff:
+                    trend = "Converging"
+                    convergence_rate = prev_diff - curr_diff
+                    # Avoid division by zero
+                    if convergence_rate > 1e-9:
                         est_crossover_days = int(curr_diff / convergence_rate)
+                    else:
+                        est_crossover_days = 9999 # Very slow convergence
+                else:
+                    trend = "Diverging"
                 
                 # Update alert data
                 alert['last_check_data'] = {

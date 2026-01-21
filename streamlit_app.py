@@ -171,15 +171,20 @@ with tab_analysis:
                                         if len(df_mas) >= 2:
                                             prev_s = df_mas[s_col].iloc[-2]
                                             prev_l = df_mas[l_col].iloc[-2]
+                                            prev_s = df_mas[s_col].iloc[-2]
+                                            prev_l = df_mas[l_col].iloc[-2]
                                             curr_diff = abs(curr_s - curr_l)
                                             prev_diff = abs(prev_s - prev_l)
-                                            trend = "Converging" if curr_diff < prev_diff else "Diverging"
                                             
-                                            # Calculate Est Crossover Days
-                                            if trend == "Converging":
+                                            if curr_diff < prev_diff:
+                                                trend = "Converging"
                                                 convergence_rate = prev_diff - curr_diff
-                                                if convergence_rate > 0:
+                                                if convergence_rate > 1e-9:
                                                     est_crossover_days = int(curr_diff / convergence_rate)
+                                                else:
+                                                    est_crossover_days = 9999
+                                            else:
+                                                trend = "Diverging"
                                             
                                         # Last Crossover
                                         crossover_data = None
